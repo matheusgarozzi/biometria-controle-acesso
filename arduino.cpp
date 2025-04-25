@@ -1,102 +1,97 @@
-#include <Adafruit_Fingerprint.h>
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <Servo.h>
 
-LiquidCrystal_I2C lcd(0x27, 16, 2); // Endereço 0x27 para LCD 16x2
+const int ledAccess = 7;
+const int ledDeny = 8;
+const int servoPin = 9;
 
-SoftwareSerial mySerial(2, 3); // RX, TX
-Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+const int botaoCadastrar = 4;
+const int botaoValidar = 10;
+const int botaoNegar = 11;
 
-const int relePin = 8;
-const int buzzerPin = 9;
-const int ledVerde = 10;
-const int ledVermelho = 11;
+Servo doorLock;
 
 void setup() {
+  doorLock.attach(servoPin);
+  pinMode(ledAccess, OUTPUT);
+  pinMode(ledDeny, OUTPUT);
+  pinMode(botaoCadastrar, INPUT_PULLUP);
+  pinMode(botaoValidar, INPUT_PULLUP);
+  pinMode(botaoNegar, INPUT_PULLUP);
   Serial.begin(9600);
-  lcd.init();
-  lcd.backlight();
-  
-  pinMode(relePin, OUTPUT);
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(ledVerde, OUTPUT);
-  pinMode(ledVermelho, OUTPUT);
-
-  finger.begin(57600);
-  
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("  Sistema de");
-  lcd.setCursor(0, 1);
-  lcd.print("  Acesso");
-  delay(2000);
-  
-  if (finger.verifyPassword()) {
-    lcd.clear();
-    lcd.print("Sensor OK");
-    Serial.println("Sensor biométrico encontrado!");
-  } else {
-    lcd.clear();
-    lcd.print("Sensor Falhou");
-    Serial.println("Sensor biométrico não encontrado :(");
-    while (1);
-  }
+  Serial.println("Sistema Biométrico - Inicializado");
+  Serial.println("1 - Botão CADASTRAR (Pino 4)");
+  Serial.println("2 - Botão VALIDAR (Pino 10)");
+  Serial.println("3 - Botão NEGAR (Pino 11)");
+  doorLock.write(0);
+  digitalWrite(ledAccess, LOW);
+  digitalWrite(ledDeny, LOW);
 }
 
 void loop() {
-  lcd.clear();
-  lcd.print("Coloque o dedo");
-  
-  int resultado = getFingerprintIDez();
-  
-  if (resultado >= 0) {
-    lcd.clear();
-    lcd.print("Acesso Liberado!");
-    digitalWrite(relePin, HIGH);
-    digitalWrite(ledVerde, HIGH);
-    tone(buzzerPin, 1000, 200);
-    
-    delay(3000); 
-    
-    digitalWrite(relePin, LOW);
-    digitalWrite(ledVerde, LOW);
-  } else if (resultado == -1) {
-
-    lcd.clear();
-    lcd.print("Acesso Negado!");
-    digitalWrite(ledVermelho, HIGH);
-    tone(buzzerPin, 300, 1000);
-    delay(1000);
-    digitalWrite(ledVermelho, LOW);
-  } else if (resultado == -2) {
-
-    lcd.clear();
-    lcd.print("Erro no sensor");
-    digitalWrite(ledVermelho, HIGH);
-    delay(1000);
-    digitalWrite(ledVermelho, LOW);
+  if (digitalRead(botaoCadastrar) == LOW) {
+    delay(50);
+    if (digitalRead(botaoCadastrar) == LOW) {
+      cadastrarDigital();
+      while(digitalRead(botaoCadastrar) == LOW);
+    }
   }
-  
-  delay(50);
+
+  if (digitalRead(botaoValidar) == LOW) {
+    delay(50);
+    if (digitalRead(botaoValidar) == LOW) {
+      validarDigital();
+      while(digitalRead(botaoValidar) == LOW);
+    }
+  }
+
+  if (digitalRead(botaoNegar) == LOW) {
+    delay(50);
+    if (digitalRead(botaoNegar) == LOW) {
+      negarDigital();
+      while(digitalRead(botaoNegar) == LOW);
+    }
+  }
 }
 
-
-int getFingerprintIDez() {
-  uint8_t p = finger.getImage();
-  if (p != FINGERPRINT_OK) return -2;
-
-  p = finger.image2Tz();
-  if (p != FINGERPRINT_OK) return -2;
-
-  p = finger.fingerFastSearch();
-  if (p != FINGERPRINT_OK) {
-    Serial.println("Digital não encontrada");
-    return -1;
+void cadastrarDigital() {
+  Serial.println("\n--- MODO CADASTRO ---");
+  Serial.println("Cadastrando digital...");
+  digitalWrite(ledAccess, HIGH);
+  digitalWrite(ledDeny, HIGH);
+  delay(1000);
+  Serial.println("Digital cadastrada!");
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(ledAccess, LOW);
+    digitalWrite(ledDeny, LOW);
+    delay(200);
+    digitalWrite(ledAccess, HIGH);
+    digitalWrite(ledDeny, HIGH);
+    delay(200);
   }
-  
-  Serial.print("ID encontrado #"); 
-  Serial.print(finger.fingerID);
-  Serial.print(" com confiança de "); 
-  Serial.println(finger.confidence);
-  return finger.fingerID;
+  digitalWrite(ledAccess, LOW);
+  digitalWrite(ledDeny, LOW);
+}
+
+void validarDigital() {
+  Serial.println("\n--- ACESSO AUTORIZADO ---");
+  digitalWrite(ledAccess, HIGH);
+  doorLock.write(180);
+  delay(3000);
+  doorLock.write(0);
+  delay(500);
+  digitalWrite(ledAccess, LOW);
+}
+
+void negarDigital() {
+  Serial.println("\n--- ACESSO NEGADO ---");
+  digitalWrite(ledDeny, HIGH);
+  delay(200);
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(ledDeny, LOW);
+    delay(200);
+    digitalWrite(ledDeny, HIGH);
+    delay(200);
+  }
+  delay(500);
+  digitalWrite(ledDeny, LOW);
 }
