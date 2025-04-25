@@ -1,7 +1,7 @@
 #include <Servo.h>
 
-const int ledVerde = 12;
-const int ledVermelho = 13;
+const int ledAccess = 7;
+const int ledDeny = 8;
 const int servoPin = 9;
 
 const int botaoCadastrar = 4;
@@ -12,23 +12,23 @@ Servo doorLock;
 
 void setup() {
   doorLock.attach(servoPin);
-  pinMode(ledVerde, OUTPUT);
-  pinMode(ledVermelho, OUTPUT);
+
+  pinMode(ledAccess, OUTPUT);
+  pinMode(ledDeny, OUTPUT);
+
   pinMode(botaoCadastrar, INPUT_PULLUP);
   pinMode(botaoValidar, INPUT_PULLUP);
   pinMode(botaoNegar, INPUT_PULLUP);
-  
+
   Serial.begin(9600);
   Serial.println("Sistema Biométrico - Inicializado");
-  Serial.println("1 - Botão CADASTRAR");
-  Serial.println("2 - Botão VALIDAR");
-  Serial.println("3 - Botão NEGAR");
+  Serial.println("1 - Botão CADASTRAR ");
+  Serial.println("2 - Botão VALIDAR ");
+  Serial.println("3 - Botão NEGAR ");
 
   doorLock.write(0);
-  digitalWrite(ledVerde, LOW);
-  digitalWrite(ledVermelho, LOW);
-
-  testeLEDs();
+  digitalWrite(ledAccess, LOW);
+  digitalWrite(ledDeny, LOW);
 }
 
 void loop() {
@@ -57,59 +57,49 @@ void loop() {
   }
 }
 
-void testeLEDs() {
-  for (int i = 0; i < 3; i++) {
-    digitalWrite(ledVerde, HIGH);
-    digitalWrite(ledVermelho, LOW);
-    delay(200);
-    digitalWrite(ledVerde, LOW);
-    digitalWrite(ledVermelho, HIGH);
-    delay(200);
-  }
-  digitalWrite(ledVermelho, LOW);
-}
-
 void cadastrarDigital() {
   Serial.println("\n--- MODO CADASTRO ---");
   Serial.println("Cadastrando digital...");
 
+  digitalWrite(ledAccess, HIGH);
+  digitalWrite(ledDeny, HIGH);
+  delay(1000);
+
+  Serial.println("Digital cadastrada!");
+
   for (int i = 0; i < 3; i++) {
-    digitalWrite(ledVerde, HIGH);
-    digitalWrite(ledVermelho, HIGH);
+    digitalWrite(ledAccess, LOW);
+    digitalWrite(ledDeny, LOW);
     delay(200);
-    digitalWrite(ledVerde, LOW);
-    digitalWrite(ledVermelho, LOW);
+    digitalWrite(ledAccess, HIGH);
+    digitalWrite(ledDeny, HIGH);
     delay(200);
   }
-  
-  Serial.println("Digital cadastrada!");
+
+  digitalWrite(ledAccess, LOW);
+  digitalWrite(ledDeny, LOW);
 }
 
 void validarDigital() {
   Serial.println("\n--- ACESSO AUTORIZADO ---");
-  digitalWrite(ledVerde, HIGH);
-  digitalWrite(ledVermelho, LOW);
-  
+  digitalWrite(ledAccess, HIGH);
   doorLock.write(180);
   delay(3000);
   doorLock.write(0);
   delay(500);
-  
-  digitalWrite(ledVerde, LOW);
+  digitalWrite(ledAccess, LOW);
 }
 
 void negarDigital() {
   Serial.println("\n--- ACESSO NEGADO ---");
-  digitalWrite(ledVerde, LOW);
-  digitalWrite(ledVermelho, HIGH);
-  
+  digitalWrite(ledDeny, HIGH);
+  delay(200);
   for (int i = 0; i < 3; i++) {
+    digitalWrite(ledDeny, LOW);
     delay(200);
-    digitalWrite(ledVermelho, LOW);
+    digitalWrite(ledDeny, HIGH);
     delay(200);
-    digitalWrite(ledVermelho, HIGH);
   }
-  
   delay(500);
-  digitalWrite(ledVermelho, LOW);
+  digitalWrite(ledDeny, LOW);
 }
