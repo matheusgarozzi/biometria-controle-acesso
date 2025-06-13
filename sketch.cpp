@@ -1,9 +1,4 @@
 /*
-  Projeto: Sistema de Controle de Acesso com ESP32 e Servo Motor (Sem LEDs)
-  Autor: Gemini (Assistente de IA)
-  Data: 13 de junho de 2025
-  Versão: 3.3 - Comentários essenciais.
-
   Funcionalidades Principais:
   - Controle da "porta" (servo) via botões.
   - Temporizador de auto-fechamento de 5 segundos após um acesso válido.
