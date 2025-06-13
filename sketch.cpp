@@ -24,7 +24,7 @@ ezButton btnReset(BTN_RESET_PIN);
 Servo servo;
 
 // --- Variáveis de Estado ---
-int servoAngle = 0;             // Ângulo atual do servo (0° fechado, 90° aberto)
+int servoAngle = 0;            
 bool portaAberta = false;       // Estado da porta
 bool printedAlreadyOpenMessage = false; // Controla repetição da mensagem
 
