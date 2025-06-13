@@ -15,8 +15,7 @@
 #define BTN_ACESSO_INVALIDO_PIN 22 // Botão de acesso inválido
 #define BTN_RESET_PIN 23         // Botão de reset/fechamento
 
-#define SERVO_PIN 26             // Pino do servo motor
-
+#define SERVO_PIN 26             
 // --- Objetos ---
 ezButton btnAcessoValido(BTN_ACESSO_VALIDO_PIN);
 ezButton btnAcessoInvalido(BTN_ACESSO_INVALIDO_PIN);
